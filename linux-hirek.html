@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KERNEL FEED — Linux Hírek</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e0a;
+    --surface: #111611;
+    --card: #141a14;
+    --border: #1e2e1e;
+    --green: #39ff6a;
+    --green-dim: #1a8c38;
+    --green-muted: #0d3d1a;
+    --text: #d4e8d4;
+    --text-dim: #7a9e7a;
+    --accent: #b8ff4a;
+    --red: #ff4a4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.07) 2px,
+      rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 0.15em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .logo-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: blink 1.2s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .header-right {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-align: right;
+    line-height: 1.6;
+  }
+  #live-time { color: var(--green); }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .hero {
+    margin-bottom: 2.5rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+  .hero h1 span { color: var(--green); }
+
+  .hero p {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+    align-items: center;
+  }
+
+  .topic-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .topic-btn:hover, .topic-btn.active {
+    background: var(--green-muted);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .fetch-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    padding: 0.4rem 1.2rem;
+    background: var(--green);
+    color: #000;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+  .fetch-btn:hover { background: var(--accent); }
+  .fetch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Grid */
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .card {
+    background: var(--card);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: background 0.15s;
+    animation: fadeIn 0.4s ease both;
+  }
+  .card:hover { background: var(--surface); }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .card-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .card-tag::before { content: '▶'; font-size: 0.5rem; }
+
+  .card h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--text);
+  }
+
+  .card p {
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+    flex: 1;
+  }
+
+  .card-footer {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: #4a6a4a;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Loading state */
+  .loading-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .skeleton {
+    background: var(--card);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .skel-line {
+    height: 10px;
+    background: linear-gradient(90deg, var(--border) 25%, var(--green-muted) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 2px;
+  }
+  .skel-line.short { width: 40%; }
+  .skel-line.med { width: 70%; }
+  .skel-line.tall { height: 60px; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* Status bar */
+  .status-bar {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    padding: 0.75rem 0;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.06em;
+    flex-wrap: wrap;
+  }
+  .status-ok { color: var(--green); }
+  .status-err { color: var(--red); }
+
+  .terminal-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    min-height: 3rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .terminal-line::before { content: '$ '; color: var(--green); flex-shrink: 0; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+    padding: 1.5rem 2rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    KERNEL FEED
+  </div>
+  <div class="header-right">
+    <div id="live-time">--:--:--</div>
+    <div>AI-POWERED // HU</div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>Linux <span>Hírek</span><br>& Infók</h1>
+    <p>// AI által generált összefoglalók — válassz témát és frissíts</p>
+  </div>
+
+  <div class="controls">
+    <button class="topic-btn active" data-topic="általános linux hírek és újdonságok">Általános</button>
+    <button class="topic-btn" data-topic="linux disztribúciók újdonságai Arch EndeavourOS Garuda CachyOS">Distrok</button>
+    <button class="topic-btn" data-topic="linux kernel fejlesztések és frissítések">Kernel</button>
+    <button class="topic-btn" data-topic="KDE Plasma GNOME Wayland asztali környezetek linux">Asztal / DE</button>
+    <button class="topic-btn" data-topic="linux biztonság CVE sebezhetőség patch">Biztonság</button>
+    <button class="topic-btn" data-topic="open source projektek szoftverek linux gaming">Gaming & Apps</button>
+    <button class="fetch-btn" id="fetch-btn" onclick="fetchNews()">▶ Frissítés</button>
+  </div>
+
+  <div class="terminal-line" id="terminal">Válassz témát, majd kattints a Frissítés gombra...</div>
+
+  <div class="status-bar" id="status-bar">
+    <span>KERNEL FEED v1.0</span>
+    <span id="status-text">Kész</span>
+  </div>
+
+  <div id="news-container"></div>
+</main>
+
+<footer>
+  <span>KERNEL FEED — AI-powered Linux hírek</span>
+  <span>Powered by Claude Sonnet</span>
+</footer>
+
+<script>
+let currentTopic = 'általános linux hírek és újdonságok';
+let isLoading = false;
+
+// Live clock
+function updateClock() {
+  document.getElementById('live-time').textContent =
+    new Date().toLocaleTimeString('hu-HU', { hour12: false });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// Topic buttons
+document.querySelectorAll('.topic-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTopic = btn.dataset.topic;
+    setTerminal(`Téma: "${btn.textContent.trim()}" — kattints a Frissítés gombra.`);
+  });
+});
+
+function setTerminal(msg) {
+  document.getElementById('terminal').textContent = msg;
+}
+
+function setStatus(msg, ok = true) {
+  const el = document.getElementById('status-text');
+  el.textContent = msg;
+  el.className = ok ? 'status-ok' : 'status-err';
+}
+
+function showSkeletons() {
+  const container = document.getElementById('news-container');
+  container.innerHTML = `<div class="loading-grid">${Array(6).fill(`
+    <div class="skeleton">
+      <div class="skel-line short"></div>
+      <div class="skel-line med"></div>
+      <div class="skel-line tall"></div>
+      <div class="skel-line med"></div>
+      <div class="skel-line short"></div>
+    </div>`).join('')}</div>`;
+}
+
+function renderCards(items) {
+  const container = document.getElementById('news-container');
+  if (!items || !items.length) {
+    container.innerHTML = '<p style="color:var(--text-dim);font-family:Space Mono,monospace;font-size:.75rem;padding:2rem 0;">Nem érkezett adat.</p>';
+    return;
+  }
+  const tags = ['DISTRO','KERNEL','SZOFTVER','BIZTONSÁG','KÖZÖSSÉG','HARDVER','GAMING','WAYLAND'];
+  container.innerHTML = `<div class="news-grid">${items.map((item, i) => `
+    <div class="card" style="animation-delay:${i * 0.07}s">
+      <div class="card-tag">${item.tag || tags[i % tags.length]}</div>
+      <h2>${item.title}</h2>
+      <p>${item.summary}</p>
+      <div class="card-footer">
+        <span>${item.source || 'LINUX KÖZÖSSÉG'}</span>
+        <span>${item.date || 'FRISS'}</span>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+async function fetchNews() {
+  if (isLoading) return;
+  isLoading = true;
+  const btn = document.getElementById('fetch-btn');
+  btn.disabled = true;
+  btn.textContent = '⟳ Töltés...';
+
+  setTerminal(`claude --query "${currentTopic}" --format json --lang hu`);
+  setStatus('Lekérés folyamatban...', true);
+  showSkeletons();
+
+  const prompt = `Te egy Linux és open source hírek szakértője vagy.
+Generálj PONTOSAN 6 aktuális, releváns hírt/infót a következő témában: "${currentTopic}".
+
+Válaszolj KIZÁRÓLAG valid JSON tömbben, semmi más szöveg ne legyen előtte vagy utána, se markdown backtick.
+
+Formátum (pontosan ezt a struktúrát követve):
+[
+  {
+    "tag": "KATEGÓRIA (pl. KERNEL, DISTRO, BIZTONSÁG, GAMING, WAYLAND stb.)",
+    "title": "Cím magyarul (max 80 karakter)",
+    "summary": "2-3 mondatos összefoglaló magyarul, konkrét, informatív",
+    "source": "Forrás neve (pl. Phoronix, DistroWatch, LWN.net, Arch Linux News stb.)",
+    "date": "2025 or 2024 (becsült)"
+  }
+]
+
+Legyen változatos: különböző alcímkék, különböző források. Konkrét verziószámokat, projektneveket is írj ahol releváns.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const raw = data.content?.find(b => b.type === 'text')?.text || '';
+    setTerminal(`Válasz megérkezett (${raw.length} byte) — feldolgozás...`);
+
+    // Strip any accidental markdown
+    const clean = raw.replace(/```json|```/g, '').trim();
+    let items;
+    try {
+      items = JSON.parse(clean);
+    } catch {
+      // Try extracting JSON array
+      const match = clean.match(/\[[\s\S]*\]/);
+      items = match ? JSON.parse(match[0]) : null;
+    }
+
+    if (!Array.isArray(items)) throw new Error('Érvénytelen JSON válasz');
+
+    renderCards(items);
+    setTerminal(`✓ ${items.length} cikk betöltve — téma: ${currentTopic}`);
+    setStatus(`${items.length} cikk betöltve`, true);
+  } catch (err) {
+    setTerminal(`HIBA: ${err.message}`);
+    setStatus('Hiba történt', false);
+    document.getElementById('news-container').innerHTML = `
+      <div style="padding:2rem;font-family:Space Mono,monospace;font-size:.75rem;color:var(--red);border:1px solid var(--border);">
+        ✗ Nem sikerült betölteni a híreket.<br><br>
+        Hiba: ${err.message}<br><br>
+        <span style="color:var(--text-dim)">Ellenőrizd a hálózati kapcsolatot vagy az API kulcsot.</span>
+      </div>`;
+  } finally {
+    isLoading = false;
+    btn.disabled = false;
+    btn.textContent = '▶ Frissítés';
+  }
+}
+
+// Auto-load on start
+window.addEventListener('load', () => setTimeout(fetchNews, 300));
+</script>
+</body>
+</html>
