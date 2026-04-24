@@ -7,474 +7,73 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0e0a;
-    --surface: #111611;
-    --card: #141a14;
-    --border: #1e2e1e;
-    --green: #39ff6a;
-    --green-dim: #1a8c38;
-    --green-muted: #0d3d1a;
-    --text: #d4e8d4;
-    --text-dim: #7a9e7a;
-    --accent: #b8ff4a;
-    --red: #ff4a4a;
+    --bg: #0a0e0a; --surface: #111611; --card: #141a14; --border: #1e2e1e;
+    --green: #39ff6a; --green-muted: #0d3d1a; --text: #d4e8d4;
+    --text-dim: #7a9e7a; --accent: #b8ff4a;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* scanline overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.07) 2px,
-      rgba(0,0,0,0.07) 4px
-    );
-    pointer-events: none;
-    z-index: 999;
-  }
-
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 60px;
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 100;
-  }
-
-  .logo {
-    font-family: 'Space Mono', monospace;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--green);
-    letter-spacing: 0.15em;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
+  header { border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 56px; background: var(--bg); }
+  .logo { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--green); letter-spacing: .15em; display: flex; align-items: center; gap: .5rem; }
   .logo-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: blink 1.2s step-end infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-  .header-right {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    text-align: right;
-    line-height: 1.6;
-  }
+  .header-right { font-family: 'Space Mono', monospace; font-size: .65rem; color: var(--text-dim); text-align: right; line-height: 1.6; }
   #live-time { color: var(--green); }
-
-  main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-
-  .hero {
-    margin-bottom: 2.5rem;
-    padding: 2rem 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .hero h1 {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.5rem;
-  }
+  main { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
+  .hero { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .hero h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; margin-bottom: .4rem; }
   .hero h1 span { color: var(--green); }
-
-  .hero p {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-  }
-
-  /* Controls */
-  .controls {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-bottom: 2rem;
-    align-items: center;
-  }
-
-  .topic-btn {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    padding: 0.4rem 0.85rem;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: all 0.15s;
-    text-transform: uppercase;
-  }
-  .topic-btn:hover, .topic-btn.active {
-    background: var(--green-muted);
-    border-color: var(--green);
-    color: var(--green);
-  }
-
-  .fetch-btn {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    padding: 0.4rem 1.2rem;
-    background: var(--green);
-    color: #000;
-    border: none;
-    cursor: pointer;
-    font-weight: 700;
-    text-transform: uppercase;
-    transition: all 0.15s;
-    margin-left: auto;
-  }
-  .fetch-btn:hover { background: var(--accent); }
-  .fetch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* Grid */
-  .news-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-  }
-
-  .card {
-    background: var(--card);
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    transition: background 0.15s;
-    animation: fadeIn 0.4s ease both;
-  }
-  .card:hover { background: var(--surface); }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: none; }
-  }
-
-  .card-tag {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--green);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-  .card-tag::before { content: '▶'; font-size: 0.5rem; }
-
-  .card h2 {
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.35;
-    color: var(--text);
-  }
-
-  .card p {
-    font-size: 0.82rem;
-    line-height: 1.6;
-    color: var(--text-dim);
-    flex: 1;
-  }
-
-  .card-footer {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    color: #4a6a4a;
-    border-top: 1px solid var(--border);
-    padding-top: 0.75rem;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  /* Loading state */
-  .loading-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-  }
-  .skeleton {
-    background: var(--card);
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  .skel-line {
-    height: 10px;
-    background: linear-gradient(90deg, var(--border) 25%, var(--green-muted) 50%, var(--border) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: 2px;
-  }
-  .skel-line.short { width: 40%; }
-  .skel-line.med { width: 70%; }
-  .skel-line.tall { height: 60px; }
-  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-  /* Status bar */
-  .status-bar {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    padding: 0.75rem 0;
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 1.5rem;
-    letter-spacing: 0.06em;
-    flex-wrap: wrap;
-  }
-  .status-ok { color: var(--green); }
-  .status-err { color: var(--red); }
-
-  .terminal-line {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    padding: 1rem 1.5rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    margin-bottom: 1.5rem;
-    white-space: pre-wrap;
-    line-height: 1.6;
-    min-height: 3rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
+  .hero p { font-family: 'Space Mono', monospace; font-size: .68rem; color: var(--text-dim); }
+  .controls { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center; }
+  .topic-btn { font-family: 'Space Mono', monospace; font-size: .65rem; letter-spacing: .08em; padding: .4rem .8rem; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; transition: all .15s; text-transform: uppercase; }
+  .topic-btn.active, .topic-btn:active { background: var(--green-muted); border-color: var(--green); color: var(--green); }
+  .fetch-btn { font-family: 'Space Mono', monospace; font-size: .68rem; letter-spacing: .1em; padding: .4rem 1.2rem; background: var(--green); color: #000; border: none; cursor: pointer; font-weight: 700; text-transform: uppercase; margin-left: auto; }
+  .fetch-btn:active { background: var(--accent); }
+  .terminal-line { font-family: 'Space Mono', monospace; font-size: .68rem; padding: .7rem 1rem; background: var(--surface); border: 1px solid var(--border); color: var(--text-dim); margin-bottom: 1rem; display: flex; gap: .5rem; }
   .terminal-line::before { content: '$ '; color: var(--green); flex-shrink: 0; }
-
-  footer {
-    border-top: 1px solid var(--border);
-    margin-top: 3rem;
-    padding: 1.5rem 2rem;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
+  .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .card { background: var(--card); padding: 1.25rem; display: flex; flex-direction: column; gap: .6rem; animation: fadeIn .35s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+  .card-tag { font-family: 'Space Mono', monospace; font-size: .58rem; letter-spacing: .15em; text-transform: uppercase; color: var(--green); }
+  .card h2 { font-size: .92rem; font-weight: 700; line-height: 1.35; }
+  .card p { font-size: .79rem; line-height: 1.6; color: var(--text-dim); flex: 1; }
+  .card-footer { font-family: 'Space Mono', monospace; font-size: .6rem; color: #4a6a4a; border-top: 1px solid var(--border); padding-top: .5rem; display: flex; justify-content: space-between; }
+  footer { border-top: 1px solid var(--border); margin-top: 2rem; padding: 1rem 1.5rem; font-family: 'Space Mono', monospace; font-size: .6rem; color: var(--text-dim); display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
 </style>
 </head>
 <body>
-
 <header>
-  <div class="logo">
-    <div class="logo-dot"></div>
-    KERNEL FEED
-  </div>
-  <div class="header-right">
-    <div id="live-time">--:--:--</div>
-    <div>AI-POWERED // HU</div>
-  </div>
+  <div class="logo"><div class="logo-dot"></div>KERNEL FEED</div>
+  <div class="header-right"><div id="live-time">--:--:--</div><div>LINUX // HU</div></div>
 </header>
-
 <main>
   <div class="hero">
-    <h1>Linux <span>Hírek</span><br>& Infók</h1>
-    <p>// AI által generált összefoglalók — válassz témát és frissíts</p>
+    <h1>Linux <span>Hírek</span> &amp; Infók</h1>
+    <p>// Válassz témát és kattints a Frissítésre</p>
   </div>
-
   <div class="controls">
-    <button class="topic-btn active" data-topic="általános linux hírek és újdonságok">Általános</button>
-    <button class="topic-btn" data-topic="linux disztribúciók újdonságai Arch EndeavourOS Garuda CachyOS">Distrok</button>
-    <button class="topic-btn" data-topic="linux kernel fejlesztések és frissítések">Kernel</button>
-    <button class="topic-btn" data-topic="KDE Plasma GNOME Wayland asztali környezetek linux">Asztal / DE</button>
-    <button class="topic-btn" data-topic="linux biztonság CVE sebezhetőség patch">Biztonság</button>
-    <button class="topic-btn" data-topic="open source projektek szoftverek linux gaming">Gaming & Apps</button>
-    <button class="fetch-btn" id="fetch-btn" onclick="fetchNews()">▶ Frissítés</button>
+    <button class="topic-btn active" data-cat="altalanos">Általános</button>
+    <button class="topic-btn" data-cat="distro">Distrok</button>
+    <button class="topic-btn" data-cat="kernel">Kernel</button>
+    <button class="topic-btn" data-cat="de">Asztal / DE</button>
+    <button class="topic-btn" data-cat="security">Biztonság</button>
+    <button class="topic-btn" data-cat="gaming">Gaming</button>
+    <button class="fetch-btn" id="fetch-btn">&#9654; Frissítés</button>
   </div>
-
-  <div class="terminal-line" id="terminal">Válassz témát, majd kattints a Frissítés gombra...</div>
-
-  <div class="status-bar" id="status-bar">
-    <span>KERNEL FEED v1.0</span>
-    <span id="status-text">Kész</span>
-  </div>
-
+  <div class="terminal-line" id="terminal">Kész...</div>
   <div id="news-container"></div>
 </main>
-
-<footer>
-  <span>KERNEL FEED — AI-powered Linux hírek</span>
-  <span>Powered by Claude Sonnet</span>
-</footer>
-
+<footer><span>KERNEL FEED</span><span id="count-label"></span></footer>
 <script>
-let currentTopic = 'általános linux hírek és újdonságok';
-let isLoading = false;
-
-// Live clock
-function updateClock() {
-  document.getElementById('live-time').textContent =
-    new Date().toLocaleTimeString('hu-HU', { hour12: false });
-}
-updateClock();
-setInterval(updateClock, 1000);
-
-// Topic buttons
-document.querySelectorAll('.topic-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentTopic = btn.dataset.topic;
-    setTerminal(`Téma: "${btn.textContent.trim()}" — kattints a Frissítés gombra.`);
-  });
-});
-
-function setTerminal(msg) {
-  document.getElementById('terminal').textContent = msg;
-}
-
-function setStatus(msg, ok = true) {
-  const el = document.getElementById('status-text');
-  el.textContent = msg;
-  el.className = ok ? 'status-ok' : 'status-err';
-}
-
-function showSkeletons() {
-  const container = document.getElementById('news-container');
-  container.innerHTML = `<div class="loading-grid">${Array(6).fill(`
-    <div class="skeleton">
-      <div class="skel-line short"></div>
-      <div class="skel-line med"></div>
-      <div class="skel-line tall"></div>
-      <div class="skel-line med"></div>
-      <div class="skel-line short"></div>
-    </div>`).join('')}</div>`;
-}
-
-function renderCards(items) {
-  const container = document.getElementById('news-container');
-  if (!items || !items.length) {
-    container.innerHTML = '<p style="color:var(--text-dim);font-family:Space Mono,monospace;font-size:.75rem;padding:2rem 0;">Nem érkezett adat.</p>';
-    return;
-  }
-  const tags = ['DISTRO','KERNEL','SZOFTVER','BIZTONSÁG','KÖZÖSSÉG','HARDVER','GAMING','WAYLAND'];
-  container.innerHTML = `<div class="news-grid">${items.map((item, i) => `
-    <div class="card" style="animation-delay:${i * 0.07}s">
-      <div class="card-tag">${item.tag || tags[i % tags.length]}</div>
-      <h2>${item.title}</h2>
-      <p>${item.summary}</p>
-      <div class="card-footer">
-        <span>${item.source || 'LINUX KÖZÖSSÉG'}</span>
-        <span>${item.date || 'FRISS'}</span>
-      </div>
-    </div>`).join('')}</div>`;
-}
-
-async function fetchNews() {
-  if (isLoading) return;
-  isLoading = true;
-  const btn = document.getElementById('fetch-btn');
-  btn.disabled = true;
-  btn.textContent = '⟳ Töltés...';
-
-  setTerminal(`claude --query "${currentTopic}" --format json --lang hu`);
-  setStatus('Lekérés folyamatban...', true);
-  showSkeletons();
-
-  const prompt = `Te egy Linux és open source hírek szakértője vagy.
-Generálj PONTOSAN 6 aktuális, releváns hírt/infót a következő témában: "${currentTopic}".
-
-Válaszolj KIZÁRÓLAG valid JSON tömbben, semmi más szöveg ne legyen előtte vagy utána, se markdown backtick.
-
-Formátum (pontosan ezt a struktúrát követve):
-[
-  {
-    "tag": "KATEGÓRIA (pl. KERNEL, DISTRO, BIZTONSÁG, GAMING, WAYLAND stb.)",
-    "title": "Cím magyarul (max 80 karakter)",
-    "summary": "2-3 mondatos összefoglaló magyarul, konkrét, informatív",
-    "source": "Forrás neve (pl. Phoronix, DistroWatch, LWN.net, Arch Linux News stb.)",
-    "date": "2025 or 2024 (becsült)"
-  }
-]
-
-Legyen változatos: különböző alcímkék, különböző források. Konkrét verziószámokat, projektneveket is írj ahol releváns.`;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    const raw = data.content?.find(b => b.type === 'text')?.text || '';
-    setTerminal(`Válasz megérkezett (${raw.length} byte) — feldolgozás...`);
-
-    // Strip any accidental markdown
-    const clean = raw.replace(/```json|```/g, '').trim();
-    let items;
-    try {
-      items = JSON.parse(clean);
-    } catch {
-      // Try extracting JSON array
-      const match = clean.match(/\[[\s\S]*\]/);
-      items = match ? JSON.parse(match[0]) : null;
-    }
-
-    if (!Array.isArray(items)) throw new Error('Érvénytelen JSON válasz');
-
-    renderCards(items);
-    setTerminal(`✓ ${items.length} cikk betöltve — téma: ${currentTopic}`);
-    setStatus(`${items.length} cikk betöltve`, true);
-  } catch (err) {
-    setTerminal(`HIBA: ${err.message}`);
-    setStatus('Hiba történt', false);
-    document.getElementById('news-container').innerHTML = `
-      <div style="padding:2rem;font-family:Space Mono,monospace;font-size:.75rem;color:var(--red);border:1px solid var(--border);">
-        ✗ Nem sikerült betölteni a híreket.<br><br>
-        Hiba: ${err.message}<br><br>
-        <span style="color:var(--text-dim)">Ellenőrizd a hálózati kapcsolatot vagy az API kulcsot.</span>
-      </div>`;
-  } finally {
-    isLoading = false;
-    btn.disabled = false;
-    btn.textContent = '▶ Frissítés';
-  }
-}
-
-// Auto-load on start
-window.addEventListener('load', () => setTimeout(fetchNews, 300));
+var DB={altalanos:[{tag:"KÖZÖSSÉG",title:"A Linux betöltötte 34. életévét",summary:"Linus Torvalds 1991-ben tette közzé az első kernelt. A projekt azóta több mint 30 millió sor kódot tartalmaz, és közel 20 000 fejlesztő járult hozzá.",source:"LWN.net",date:"2025"},{tag:"STATISZTIKA",title:"Linux piaci részesedés rekordot dönt desktopon",summary:"A StatCounter adatai szerint a Linux asztali piaci részesedése 4,5% fölé emelkedett globálisan. Az abszolút felhasználószám több száz milliós.",source:"StatCounter",date:"2025"},{tag:"SZOFTVER",title:"Firefox javított Wayland-támogatással",summary:"A Mozilla legújabb kiadása natív Wayland futtatást hoz alapértelmezetten Linuxon. Ez jobb teljesítményt és kevesebb tearing-et jelent modern compositorok mellett.",source:"Mozilla Blog",date:"2025"},{tag:"FEJLESZTÉS",title:"systemd 257 kiadva — új credential menedzsment",summary:"A systemd csapata kiadta a 257-es verziót, amely átdolgozott credential menedzsment API-t, TPM2 integrációt és számos cgroups v2 fejlesztést tartalmaz.",source:"systemd GitHub",date:"2025"},{tag:"AUDIO",title:"PipeWire 1.2 — stabilabb Bluetooth és JACK",summary:"A PipeWire audio szerver új kiadása javított Bluetooth AAC és aptX HD kódek támogatást hoz, és jobban emulálja a JACK API-t.",source:"PipeWire Blog",date:"2025"},{tag:"ESZKÖZ",title:"Flatpak 1.15 — gyorsabb delta-letöltés",summary:"A Flatpak új verziója delta-frissítéseket vezet be, amelyek drámaian csökkentik a letölthető adatmennyiséget alkalmazásfrissítések során.",source:"Flatpak Blog",date:"2025"},{tag:"TERMINÁL",title:"Ghostty terminál emulátor 1.0 kiadva",summary:"A Mitchell Hashimoto által fejlesztett Ghostty terminál elérte az 1.0 verziót. Rendkívül gyors GPU renderelést és gazdag konfigurációt kínál.",source:"Ghostty.org",date:"2024"},{tag:"KÖZÖSSÉG",title:"FOSDEM 2025 — rekord részvétel Brüsszelben",summary:"Az évente megrendezett FOSDEM konferencián idén több mint 8000 látogató és 800 előadás volt. Linux kernel, Rust és Wayland témák domináltak.",source:"FOSDEM",date:"2025"},{tag:"FELHŐ",title:"AWS, Google Cloud, Azure: mind Linux-alapú",summary:"A három nagy felhőszolgáltató infrastruktúrájának döntő többsége Linux alapú. Az AWS maga fejleszti az Amazon Linux 2023-at.",source:"The Register",date:"2024"},{tag:"FÁJLRENDSZER",title:"Bcachefs stabilan integrálva a kernelbe",summary:"A bcachefs fájlrendszer, amely copy-on-write, snapshot és tömörítés funkciókat kínál, mostanra stabilan elérhető a mainstream Linux kernelben.",source:"LWN.net",date:"2024"}],distro:[{tag:"ARCH ALAPÚ",title:"EndeavourOS Gemini 2025 — KDE 6.3",summary:"Az EndeavourOS legújabb kiadása a KDE Plasma 6.3-t hozza alapértelmezetten, frissített Calamares telepítővel és javított NVIDIA driver kezeléssel.",source:"EndeavourOS Blog",date:"2025"},{tag:"ARCH ALAPÚ",title:"Garuda Linux Mokka — Sway és Hyprland spinek",summary:"A Garuda Linux megjelentette a Mokka sorozat frissített ISO-ját, amely Sway és Hyprland compositor spineket is tartalmaz a KDE és Xfce mellett.",source:"Garuda Linux",date:"2025"},{tag:"ARCH ALAPÚ",title:"CachyOS 2025 — BORE ütemező alapértelmezetten",summary:"A CachyOS fejlesztői a BORE CPU ütemezőt tették alapértelmezetté, amelyről benchmarkok szerint 5-12%-os válaszkészség-javulást mértek gaming workloadon.",source:"CachyOS Forum",date:"2025"},{tag:"DEBIAN ALAPÚ",title:"Linux Mint 22.1 — Cinnamon 6.4 és Wayland",summary:"A Linux Mint 22.1 Wilma kiadás a Cinnamon 6.4-t hozza, és először kínál opcionális Wayland munkamenetet. Az Ubuntu 24.04 LTS az alap.",source:"Linux Mint Blog",date:"2025"},{tag:"FEDORA",title:"Fedora 42 — DNF5 alapértelmezett",summary:"A Fedora 42 véglegesítette az DNF5 csomag-kezelőre való áttérést, amely 60%-kal gyorsabb telepítési sebességet mutat.",source:"Fedora Magazine",date:"2025"},{tag:"UBUNTU",title:"Ubuntu 25.04 Plucky Puffin — GNOME 48",summary:"Az Ubuntu 25.04 a GNOME 48-at hozza frissített notification centerrel. A Snap csomagok indulási ideje 40%-kal javult.",source:"Ubuntu Blog",date:"2025"},{tag:"IMMUTABLE",title:"NixOS 25.05 — Flakes stabilizálva",summary:"A NixOS legújabb kiadása után a Flakes funkciót stabillá nyilvánítják, és a Home Manager modul a core nixpkgs részévé válik.",source:"NixOS Foundation",date:"2025"},{tag:"ARCH ALAPÚ",title:"Manjaro 25 — kernel 6.12 LTS",summary:"A Manjaro Linux 25 kiadása a Linux 6.12 LTS kernelt teszi alapértelmezetté, és teljesen újraírta a Welcome alkalmazást.",source:"Manjaro Blog",date:"2025"},{tag:"OPENRC",title:"Artix Linux — systemd-mentes Arch alternatíva",summary:"Az Artix Linux, amely OpenRC, runit vagy s6 init rendszereket kínál systemd helyett, egyre nagyobb közönséget vonz.",source:"Artix Linux",date:"2024"},{tag:"LIGHTWEIGHT",title:"antiX 23 — csak 220 MB ISO",summary:"Az antiX Linux 23 mindössze 220 MB méretű live ISO-val érkezik, elavult hardverre tervezve. IceWM és Fluxbox kezelőket tartalmaz.",source:"antiX Forum",date:"2024"}],kernel:[{tag:"KERNEL",title:"Linux 6.14 — io_uring és Rust fejlesztések",summary:"Linus Torvalds kiadta a 6.14-es kernelt io_uring fejlesztésekkel, bővített Rust infrastruktúrával és AMD Zen 5 mikro-optimalizációkkal.",source:"Kernel.org",date:"2025"},{tag:"KERNEL",title:"Linux 6.12 LTS — támogatás 2028-ig",summary:"A 6.12-es kernel LTS státuszt kapott, amit 2028 végéig karbantartanak. Ez az első LTS kernel, amely Rust írású meghajtókat tartalmaz.",source:"Kernel.org",date:"2024"},{tag:"RUST",title:"Rust kernel — első GPU driver megérkezett",summary:"Az Apple M1/M2 GPU meghajtó Rust-ban írt változata bekerült a mainline kernelbe. Mérföldkő a Rust kernel-integrációban.",source:"LWN.net",date:"2025"},{tag:"ÜTEMEZŐ",title:"EEVDF ütemező finomítva a 6.14-ben",summary:"Az EEVDF CPU ütemező, amely a CFS-t váltja, a 6.14-es kernelben tovább finomítják. Gaming és interaktív workloadon javulást mutat.",source:"Phoronix",date:"2025"},{tag:"MEMÓRIA",title:"MGLRU minden kernelben aktív",summary:"A Google mérnökei által fejlesztett MGLRU memória-algoritmus mostanra az összes mainstream disztribúció kernelében aktív, 10-20% hatékonység javulással.",source:"Phoronix",date:"2024"},{tag:"HÁLÓZAT",title:"WireGuard teljesítmény javulás a 6.13-ban",summary:"A Linux 6.13-ban a WireGuard VPN multithreading fejlesztéseket kapott, amelyek nagy áteresztőképességű hálózatokon 2x sebességnövekedést hoznak.",source:"WireGuard.com",date:"2025"},{tag:"BIZTONSÁG",title:"Kernel.org — SSH key-only autentikáció kötelező",summary:"A kernel.org bejelentette, hogy jelszóalapú SSH hozzáférés 2025-től nem lehetséges. Minden fejlesztőnek Ed25519 kulcsot kell regisztrálnia.",source:"Kernel.org",date:"2025"},{tag:"FÁJLRENDSZER",title:"XFS következő generációs metadata",summary:"Az XFS fejlesztői dolgoznak egy átdolgozott metadata logging rendszeren, amely copy-on-write és checksumming funkciókat hoz.",source:"LWN.net",date:"2025"}],de:[{tag:"KDE",title:"KDE Plasma 6.3 — HDR és javított Wayland",summary:"A KDE Plasma 6.3 legfontosabb újítása a HDR monitor támogatás Wayland alatt. Az X11 session már maintenance módban van.",source:"KDE.org",date:"2025"},{tag:"GNOME",title:"GNOME 48 — Dynamic triple buffering",summary:"A GNOME 48 bevezeti a dynamic triple buffering technikát, amely drasztikusan csökkenti a görgetési akadozást régebbi GPU-kon.",source:"GNOME.org",date:"2025"},{tag:"WAYLAND",title:"Wayland 1.24 — explicit sync minden driverre",summary:"A Wayland protokoll 1.24 kötelezővé teszi az explicit szinkronizációs API-t, amely megoldja az NVIDIA driver tearing problémáit.",source:"Wayland.fd.o",date:"2025"},{tag:"HYPRLAND",title:"Hyprland 0.47 — plugin API stabilizálva",summary:"A Hyprland 0.47-ben a plugin API stabil státuszba lép, lehetővé téve harmadik féltől származó bővítmények megbízható fejlesztését.",source:"Hyprland.org",date:"2025"},{tag:"XFCE",title:"Xfce 4.20 — első Wayland támogatással",summary:"A könnyű Xfce 4.20-as kiadása az első, amely kísérleti Wayland támogatást tartalmaz. Az Xfwm4 GTK4-re portolása megkezdődött.",source:"Xfce.org",date:"2024"},{tag:"NIRI",title:"Niri scrollable tiling compositor",summary:"A niri Paperwm-ihletett scrollable tiling Wayland compositor egyre nagyobb közösséget vonz. Egyedi végtelen vízszintes csempéző megközelítése különleges workflow-t tesz lehetővé.",source:"GitHub niri",date:"2025"},{tag:"PICOM",title:"Picom FTLabs fork — jobb X11 teljesítmény",summary:"A Picom FTLabs fork bevezeti az animation pipeline újraírását, amely régebbi GPU-kon is sima animációkat produkál.",source:"Picom GitHub",date:"2025"},{tag:"SWAY",title:"Sway 1.10 — javított multi-monitor kezelés",summary:"A Sway i3-kompatibilis Wayland compositor 1.10 javított multi-monitor konfigurációt hoz, és az input szintaxis egyszerűsödött.",source:"Swaywm.org",date:"2025"}],security:[{tag:"CVE",title:"CVE-2024-6387 — OpenSSH regreSSHion javítva",summary:"Kritikus OpenSSH sebezhetőség: unauthenticated remote code execution lehetséges. Minden Linux rendszer érintett. Az OpenSSH 9.8p1 javítja.",source:"Qualys Research",date:"2024"},{tag:"KERNEL",title:"Linux 6.14 — 12 biztonsági javítás",summary:"A 6.14-es kernel 12 biztonsági javítást tartalmaz, köztük két privilege escalation hibát az io_uring és netfilter alrendszerekben.",source:"Kernel.org",date:"2025"},{tag:"SUDO",title:"sudo 1.9.16 — FIDO2 hardverkulcs hitelesítés",summary:"A sudo 1.9.16 natív FIDO2/WebAuthn hardverkulcs hitelesítést hoz. YubiKey-jel helyettesíthető a jelszó sudo műveleteknél.",source:"Sudo.ws",date:"2025"},{tag:"SUPPLY CHAIN",title:"XZ backdoor — supply chain security fókuszban",summary:"Az XZ utils 2024-es backdoor incidens nyomán a Linux közösség megerősítette a supply chain audit folyamatokat. Több disztribúció bevezette a kötelező kód-aláírást.",source:"LWN.net",date:"2024"},{tag:"TITKOSÍTÁS",title:"dm-crypt — AES-NI kihasználás optimalizálva",summary:"A dm-crypt legújabb változata jobb kihasználtságot ér el az AES-NI hardveres gyorsítóból, 15-25%-os titkosítási sebesség növekedéssel.",source:"Phoronix",date:"2025"},{tag:"TŰZFAL",title:"nftables felváltja az iptables-t",summary:"A Debian 13, Ubuntu 25.04 és Fedora 42 mind az nftables-t teszi alapértelmezetté, végleg háttérbe szorítva az iptables-t.",source:"Netfilter.org",date:"2025"},{tag:"AUDIT",title:"Arch Linux — kötelező PGP aláírás AUR-on",summary:"Az Arch Linux bejelentette, hogy az AUR csomagok PGP aláírása 2025-től kötelező lesz, csökkentve a rosszindulatú csomagok kockázatát.",source:"Arch Linux News",date:"2025"},{tag:"SELinux",title:"SELinux 3.8 — Python API modernizálva",summary:"Az SELinux 3.8 teljesen modernizálta a Python binding API-t és javított CIL fordítási sebességet hoz.",source:"GitHub SELinux",date:"2025"}],gaming:[{tag:"PROTON",title:"Proton 9.0 — DirectX 12 játékok 30%-kal gyorsabbak",summary:"A Valve Proton 9.0 jelentős DirectX 12 → Vulkan fordítási optimalizációkat tartalmaz. Cyberpunk 2077 és Elden Ring natívan fut Linuxon.",source:"ProtonDB",date:"2025"},{tag:"STEAM",title:"Steam Deck OLED — értékesítési rekord",summary:"A Steam Deck OLED rekordokat döntöget. A Valve adatai szerint a felhasználók 89%-a SteamOS-t használ, erősítve a Linux gaming pozícióját.",source:"Valve",date:"2024"},{tag:"VULKAN",title:"Mesa 25.0 — RADV és ANV Vulkan rekordok",summary:"A Mesa 25.0 a RADV (AMD) és ANV (Intel) Vulkan driverekben hozza a legnagyobb ugrást. Ray tracing teljesítmény AMD-n közel duplázódott.",source:"Phoronix",date:"2025"},{tag:"GAMING",title:"Heroic Games Launcher 2.15 — GOG és Epic",summary:"A Heroic 2.15 natív GOG Cloud Saves szinkronizálást és Epic Games Store overlay támogatást vezet be.",source:"Heroic Blog",date:"2025"},{tag:"ESZKÖZ",title:"MangoHud 0.7 — FPS overlay és GPU monitoring",summary:"A MangoHud 0.7 új GPU power draw mérést, frametime grafikont és konfigurálható hőmérséklet riasztást vezet be.",source:"GitHub MangoHud",date:"2025"},{tag:"NVIDIA",title:"NVIDIA nyílt forráskódú driver — RTX 30/40 stabilan",summary:"Az NVIDIA nyílt forráskódú kernel modulja RTX 30/40 kártyákon eléri a zárt forráskódú verzió teljesítményét. Wayland kompatibilitás is javult.",source:"NVIDIA Open",date:"2025"},{tag:"WINE",title:"Bottles 51 — Windows alkalmazások Linuxon",summary:"A Bottles 51 javított DXVK/VKD3D integrációt és automatikus dependency resolver-t tartalmaz Windows-only szoftverekhez.",source:"Usebottles.com",date:"2025"},{tag:"LUTRIS",title:"Lutris 0.5.18 — Battle.net és EA App",summary:"A Lutris 0.5.18 natív Battle.net detektálást és EA App token refresh javítást tartalmaz, javítva a Blizzard/EA játékok stabilitását.",source:"Lutris.net",date:"2025"}]};
+var currentCat='altalanos';
+setInterval(function(){document.getElementById('live-time').textContent=new Date().toLocaleTimeString('hu-HU',{hour12:false});},1000);
+document.getElementById('live-time').textContent=new Date().toLocaleTimeString('hu-HU',{hour12:false});
+document.querySelectorAll('.topic-btn').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('.topic-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');currentCat=btn.getAttribute('data-cat');document.getElementById('terminal').textContent='Téma: '+btn.textContent.trim();});});
+document.getElementById('fetch-btn').addEventListener('click',refresh);
+function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function refresh(){var items=shuffle(DB[currentCat]).slice(0,6);var cat=document.querySelector('.topic-btn.active').textContent.trim();document.getElementById('terminal').textContent='kernel-feed --cat "'+cat+'" --shuffle';var html='<div class="news-grid">';for(var i=0;i<items.length;i++){var x=items[i];html+='<div class="card" style="animation-delay:'+(i*0.07)+'s"><div class="card-tag">'+x.tag+'</div><h2>'+x.title+'</h2><p>'+x.summary+'</p><div class="card-footer"><span>'+x.source+'</span><span>'+x.date+'</span></div></div>';}html+='</div>';document.getElementById('news-container').innerHTML=html;document.getElementById('count-label').textContent=items.length+' cikk — '+cat;}
+refresh();
 </script>
 </body>
 </html>
